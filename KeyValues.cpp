@@ -135,7 +135,7 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
         {
             // We don't want to include the qoute
             // But if we had a backslash before this qoute, then we simply add it.
-            if ( '"' == var )
+            if ( '"' == var && !bSlashQoute )
             {
                 eState = VALUE_END;
                 break;
