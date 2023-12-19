@@ -365,6 +365,24 @@ void Translator::OpenKeyValueImport()
     }
 }
 
+void Translator::OpenExport()
+{
+    QString savePath = QFileDialog::getSaveFileName(
+        this,
+        tr("Export Translation"),
+        QString::fromStdString(strMainPath),
+        tr("Translation KeyValue Files (*.txt)")
+    );
+    if ( savePath == "" ) return;
+    QFile f(savePath);
+    QFileInfo fileInfo(f.fileName());
+    QString filename(fileInfo.fileName());
+    f.close();
+    if ( filename == "" ) return;
+    KeyValues *pKV = new KeyValues( "lang" );
+    pKV->Export( savePath, filename, JsonData );
+}
+
 void Translator::OpenOptions()
 {
     // Create Dialog

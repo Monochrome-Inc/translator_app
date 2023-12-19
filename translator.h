@@ -39,6 +39,7 @@ public:
 public slots:
     void ClearFile();
     void OpenKeyValueImport();
+    void OpenExport();
     void OpenOptions();
     void ShowAbout();
     void ShowQTAbout();

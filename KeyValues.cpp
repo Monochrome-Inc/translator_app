@@ -70,6 +70,22 @@ KeyValueRead_e KeyValues::LoadFile( const QString szFile )
     return KVRead_ERR_NOTLANG;
 }
 
+void KeyValues::Export( const QString szPath, const QString szFile, Json::Value data )
+{
+// TODO - Export the json data to KeyValues
+//Output must be this:
+/*
+ * "lang"
+ * {
+ *    "Language" "english"
+ *    "Tokens"
+ *    {
+ *       "UI_EXAMPLE"   "My Sample Text"
+ *    }
+ * }
+*/
+}
+
 bool KeyValues::IsLineIgnored( QString szLine )
 {
     if ( szLine.indexOf("//") != -1 ) return true;

@@ -2038,6 +2038,7 @@ QAbstractView:selected {
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
+    <addaction name="actionExport"/>
     <addaction name="actionImport"/>
     <addaction name="actionClear"/>
     <addaction name="separator"/>
@@ -2206,6 +2207,14 @@ QAbstractView:selected {
    </property>
    <property name="text">
     <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
    </property>
   </action>
  </widget>
@@ -2506,6 +2515,22 @@ QAbstractView:selected {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionExport</sender>
+   <signal>triggered()</signal>
+   <receiver>Translator</receiver>
+   <slot>OpenExport()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>433</x>
+     <y>192</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>ShowQTAbout()</slot>
@@ -2525,5 +2550,6 @@ QAbstractView:selected {
   <slot>OpenKeyValueImport()</slot>
   <slot>ShowAbout()</slot>
   <slot>ClearFile()</slot>
+  <slot>OpenExport()</slot>
  </slots>
 </ui>

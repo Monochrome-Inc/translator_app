@@ -2,6 +2,7 @@
 #define KEYVALUES_H
 
 #include <QString>
+#include <json.h>
 
 struct KeyValueData
 {
@@ -23,6 +24,7 @@ public:
     KeyValueRead_e LoadFile( const QString szFile );
     void GrabKeyValues( std::list<KeyValueData> &keys );
     QString GrabLanguageID() { return m_Language; };
+    void Export( const QString szPath, const QString szFile, Json::Value data );
 private:
     bool IsLineIgnored( QString szLine );
     KeyValueData ReadLine( QString szLine, bool bTokens );
