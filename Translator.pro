@@ -66,10 +66,3 @@ DEPENDPATH += $$PWD/json
 
 win32-g++: PRE_TARGETDEPS += $$PWD/json/libjsoncpp.a
 else:win32:!win32-g++: PRE_TARGETDEPS += $$PWD/json/jsoncpp.lib
-
-# SteamAPI
-#win32: LIBS += -L$$PWD/steam/ -lsteam_api64
-##PRE_TARGETDEPS += $$PWD/steam/steam_api64.lib
-#
-#INCLUDEPATH += $$PWD/steam
-#DEPENDPATH += $$PWD/steam
