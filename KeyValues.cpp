@@ -92,6 +92,7 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
     };
     QouteState eState = BEGIN;
 
+    bool bSlashQoute = false;
     bool bMultilineReading = s_bMultiLineValue;
     if ( !bTokens )
         bMultilineReading = false;
@@ -102,7 +103,8 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
         foreach( QChar var, szLine )
         {
             // We don't want to include the qoute
-            if ( '"' == var )
+            // But if we had a backslash before this qoute, then we simply add it.
+            if ( '"' == var && !bSlashQoute )
             {
                 switch( eState )
                 {
@@ -120,6 +122,11 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
             // Grab the Value
             else if ( eState == VALUE_START )
                 data.Value += var;
+            // Do this last, since we want to check if this current var has a slash
+            if ( '\\' == var )
+                bSlashQoute = true;
+            else
+                bSlashQoute = false;
         }
     }
     else
@@ -127,6 +134,7 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
         foreach( QChar var, szLine )
         {
             // We don't want to include the qoute
+            // But if we had a backslash before this qoute, then we simply add it.
             if ( '"' == var )
             {
                 eState = VALUE_END;
@@ -134,6 +142,11 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
             }
             else
                 s_MultiLineValue.Value += var;
+            // Do this last, since we want to check if this current var has a slash
+            if ( '\\' == var )
+                bSlashQoute = true;
+            else
+                bSlashQoute = false;
         }
     }
 

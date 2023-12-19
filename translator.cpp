@@ -331,6 +331,14 @@ void Translator::OpenKeyValueImport()
             ui->actionSave->setEnabled( true );
             ui->listWidget->setEnabled( true );
             ui->tableWidget->setEnabled( true );
+
+            ui->actionLangAdd->setEnabled( true );
+            ui->actionLangRemove->setEnabled( true );
+            ui->actionLangExport->setEnabled( true );
+            ui->actionLangImport->setEnabled( true );
+            ui->actionKeyCreate->setEnabled( true );
+            ui->actionKeyRemove->setEnabled( true );
+
             ui->statusBar->showMessage( "Imported language file.", 10000 );
         }
         break;
