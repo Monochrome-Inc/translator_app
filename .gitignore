@@ -1,0 +1,5 @@
+# SteamWorks API cannot be destributed here! Grab v1.4.2 from http://partner.steamgames.com/ !!!
+steam/
+Translator.pro.user
+steam_api.dll
+steam_api.lib
