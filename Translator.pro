@@ -4,7 +4,8 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT      += core gui
+QT      += core5compat
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -27,6 +28,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    KeyValues.cpp \
         main.cpp \
         translator.cpp \
     dialogadd.cpp \
@@ -36,6 +38,7 @@ SOURCES += \
     dialogabout.cpp
 
 HEADERS += \
+    KeyValues.h \
         translator.h \
     dialogadd.h \
     dialogremove.h \
@@ -55,19 +58,18 @@ FORMS += \
 RESOURCES += qdarkstyle/style.qrc
 
 # JsonCPP
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/json/ -ljsoncpp
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/json/ -ljsoncppd
+win32: LIBS += -L$$PWD/json/ -ljsoncpp
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/json/ -ljsoncppd
 
 INCLUDEPATH += $$PWD/json
 DEPENDPATH += $$PWD/json
 
-win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/json/libjsoncpp.a
-else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/json/libjsoncppd.a
-else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/json/jsoncpp.lib
-else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/json/jsoncppd.lib
+win32-g++: PRE_TARGETDEPS += $$PWD/json/libjsoncpp.a
+else:win32:!win32-g++: PRE_TARGETDEPS += $$PWD/json/jsoncpp.lib
 
 # SteamAPI
-win32: LIBS += -L$$PWD/steam/ -lsteam_api
-
-INCLUDEPATH += $$PWD/steam
-DEPENDPATH += $$PWD/steam
+#win32: LIBS += -L$$PWD/steam/ -lsteam_api64
+##PRE_TARGETDEPS += $$PWD/steam/steam_api64.lib
+#
+#INCLUDEPATH += $$PWD/steam
+#DEPENDPATH += $$PWD/steam

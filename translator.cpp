@@ -1,7 +1,4 @@
-#include <chrono>
-
 #include <QMessageBox>
-#include <QFile>
 #include <QTextStream>
 #include <QFileDialog>
 #include <QWidget>
@@ -10,7 +7,9 @@
 #include <QCloseEvent>
 #include <QDateTime>
 
+#include "KeyValues.h"
 #include "translator.h"
+#include "qforeach.h"
 #include "ui_translator.h"
 
 // Dialogs
@@ -19,8 +18,6 @@
 #include "dialogremove.h"
 #include "dialogoptions.h"
 #include "dialogabout.h"
-
-#include "steam/steam_api.h"
 
 Json::Value JsonData;
 Json::Value JsonConfig;
@@ -55,6 +52,8 @@ Translator::Translator(QWidget *parent) :
 
     LoadConfig();
 
+    bIgnoreAddItemError = false;
+
     timer = new QTimer(this);
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(AutoSave()));
     timer->start(iMinSaveTimer);
@@ -63,17 +62,8 @@ Translator::Translator(QWidget *parent) :
     QObject::connect(timer_bk, SIGNAL(timeout()), this, SLOT(AutoBackup()));
     timer_bk->start(iMinBackupTimer);
 
-    char GameFolder[ 1024 ];
-    SteamApps()->GetAppInstallDir( 17500, GameFolder, 1024 );
-
-    std::string strGamePath = GameFolder;
-    strGamePath += "/zps/translations";
-    strMainPath = strExportPath = strGamePath;
-
-    SteamApps()->GetAppInstallDir( 552890, GameFolder, 1024 );
-    std::string strBackupPath = GameFolder;
-    strBackupPath += "/translator_auto_backup";
-    strBackupLocation = strBackupPath;
+    strMainPath = strExportPath = "./translations";
+    strBackupLocation = "./translator_auto_backup";
 
     if ( !JsonConfig["dialog_options"]["main_path"].empty() )
         strMainPath = JsonConfig["dialog_options"]["main_path"].asString();
@@ -86,7 +76,6 @@ Translator::Translator(QWidget *parent) :
 void Translator::ShutDown()
 {
     timer->stop();
-    SteamAPI_Shutdown();
     SaveConfig(true);
 }
 
@@ -163,7 +152,7 @@ void Translator::SaveTableValue(int tableid, std::string lang, std::string key, 
 
     std::string output = value.toUtf8().data();
     widget->setText( QString::fromStdString( output ) );
-    widget->setTextColor( QColor(255, 255, 255) );
+    widget->setForeground( QColor(255, 255, 255) );
     JsonData[ lang ][ key ] = output;
     SetModified(true);
 }
@@ -242,10 +231,6 @@ void Translator::Import()
                 QString::fromStdString(strExportPath),
                 tr("Language File (*.jlang)")
                );
-    QFile f(filePath);
-    QFileInfo fileInfo(f.fileName());
-    QString filename(fileInfo.fileName());
-    f.close();
 
     Json::CharReaderBuilder rbuilder;
     Json::Value JSONReaderData;
@@ -273,17 +258,112 @@ void Translator::Import()
     }
 }
 
+void Translator::ClearFile()
+{
+    QMessageBox::StandardButton resBtn = QMessageBox::question(
+        this, "Translator",
+        tr("Do you want to clear the local data?\n"),
+        QMessageBox::No | QMessageBox::Yes,
+        QMessageBox::Yes
+    );
+    if (resBtn == QMessageBox::No) return;
+    // Clear everything
+    bFileLoaded = false;
+    JsonData.clear();
+    ui->actionClear->setEnabled( false );
+    ui->actionSave->setEnabled( false );
+    ui->listWidget->setEnabled( false );
+    ui->tableWidget->setEnabled( false );
+    LoadTranslation();
+    JsonData.clear();
+    AddKey( "UI_EXAMPLE_VALUE", "", QColor(160, 160, 160) );
+    ui->statusBar->showMessage( "Cleared local data.", 10000 );
+}
+
+void Translator::OpenKeyValueImport()
+{
+    QString filePath = QFileDialog::getOpenFileName(
+        this,
+        tr("Import Keyvalue Translation File"),
+        QString::fromStdString(strExportPath),
+        tr("KeyValue File (*.txt)")
+    );
+    KeyValues *pKV = new KeyValues( "lang" );
+    KeyValueRead_e ret = pKV->LoadFile( filePath );
+    switch (ret)
+    {
+        case KVRead_OK:
+        {
+            bool bHaveLanguages = false;
+            std::vector<std::string> langgroups = JsonData.getMemberNames();
+            if (langgroups.size() > 0)
+                bHaveLanguages = true;
+            if ( !bHaveLanguages )
+            {
+                QString savePath = QFileDialog::getSaveFileName(
+                    this,
+                    tr("Save Translation File"),
+                    QString::fromStdString(strMainPath),
+                    tr("Translation Files (*.json)")
+                );
+                if ( savePath == "" ) return;
+                QFile f(savePath);
+                QFileInfo fileInfo(f.fileName());
+                QString filename(fileInfo.fileName());
+                f.close();
+                if ( filename == "" ) return;
+                strFileLoaded = filename.toStdString();
+                strFileLocation = savePath.toStdString();
+                bFileLoaded = true;
+                SaveConfig();
+            }
+            std::string _lang = pKV->GrabLanguageID().toStdString();
+            bIgnoreAddItemError = true;
+            AddItem( pKV->GrabLanguageID().toStdString(), true );
+            std::list<KeyValueData> _Keys;
+            pKV->GrabKeyValues( _Keys );
+            for ( auto data : _Keys )
+                AddItem( data.Key.toStdString(), data.Value.toStdString(), _lang );
+            bIgnoreAddItemError = false;
+            SetModified( true );
+            LoadTranslation();
+            ui->actionClear->setEnabled( true );
+            ui->actionSave->setEnabled( true );
+            ui->listWidget->setEnabled( true );
+            ui->tableWidget->setEnabled( true );
+            ui->statusBar->showMessage( "Imported language file.", 10000 );
+        }
+        break;
+        case KVRead_ERR_NOTLANG:
+        {
+            QMessageBox::warning(
+                this,
+                "Import Error",
+                tr("This is not a translation keyvalue file.\n"),
+                QMessageBox::Yes
+                );
+        }
+        break;
+        case KVRead_ERR_LANG_NOT_FOUND:
+        {
+            QMessageBox::warning(
+                this,
+                "Import Error",
+                tr("This language file is missing it's language string!\n"),
+                QMessageBox::Yes
+                );
+        }
+        break;
+    }
+}
+
 void Translator::OpenOptions()
 {
-    char GameFolder[ 512 ];
-    SteamApps()->GetAppInstallDir( 17500, GameFolder, 512 );
-    std::string strGamePath = GameFolder;
-    strGamePath += "/zps/translations";
     // Create Dialog
     DialogOptions *pDialog = new DialogOptions(this);
     pDialog->setAttribute(Qt::WA_DeleteOnClose);
     pDialog->show();
-    pDialog->SetDefault( strGamePath, strBackupLocation, 5 );
+    pDialog->SetDefault( "./translations", strBackupLocation, 5 );
     pDialog->ReadConfig();
     // Resize our window size
     if ( !JsonConfig["dialog_options"]["width"].empty() && !JsonConfig["dialog_options"]["height"].empty() )
@@ -367,6 +447,11 @@ bool HasKey(std::string strKey)
 
 void Translator::AddItem(std::string strItem, bool bLang)
 {
+    AddItem(strItem, "", bLang);
+}
+
+void Translator::AddItem(std::string strItem, std::string strValue, bool bLang)
+{
     std::string strInput = strItem;
     if ( bLang )
         ReplaceStringInPlace( strInput, "lang_", "" );
@@ -388,12 +473,13 @@ void Translator::AddItem(std::string strItem, bool bLang)
         // Check if it already exist
         if ( HasLanguage( strLang ) )
         {
-            QMessageBox::warning(
-                        this,
-                        "Error",
-                        tr("The language already exist!\n"),
-                        QMessageBox::Yes
-            );
+            if (!bIgnoreAddItemError)
+                QMessageBox::warning(
+                            this,
+                            "Error",
+                            tr("The language already exist!\n"),
+                            QMessageBox::Yes
+                );
             return;
         }
         Json::Value jTemp;
@@ -404,15 +490,16 @@ void Translator::AddItem(std::string strItem, bool bLang)
         // Check if it already exist
         if ( HasKey( strInput ) )
         {
-            QMessageBox::warning(
-                        this,
-                        "Error",
-                        tr("The translation key already exist!\n"),
-                        QMessageBox::Yes
-            );
+            if (!bIgnoreAddItemError)
+                QMessageBox::warning(
+                            this,
+                            "Error",
+                            tr("The translation key already exist!\n"),
+                            QMessageBox::Yes
+                );
             return;
         }
-        JsonData["lang_english"][strInput] = "";
+        JsonData["lang_english"][strInput] = strValue;
     }
     LoadTranslation();
 
@@ -421,6 +508,12 @@ void Translator::AddItem(std::string strItem, bool bLang)
     ui->statusBar->showMessage( QString::fromStdString( strStatusMsg ), 10000 );
 
     SetModified( true );
+}
+
+void Translator::AddItem(std::string strItem, std::string strValue, std::string strLang)
+{
+    JsonData["lang_" + strLang][strItem] = strValue;
+    ui->statusBar->showMessage( "Imported translation file", 10000 );
 }
 
 void Translator::RemoveItem(std::string strItem, bool bLang)
@@ -685,6 +778,7 @@ void Translator::OpenSpecificFile(std::string strLocation, std::string strFile, 
         strFileLoaded = strFile;
         strFileLocation = strLocation;
 
+        ui->actionClear->setEnabled( true );
         ui->actionSave->setEnabled( true );
         ui->actionLangAdd->setEnabled( true );
         ui->actionKeyCreate->setEnabled( true );
@@ -916,7 +1010,7 @@ void Translator::AddKey(std::string strKey, std::string strValue, QColor color)
     const bool __sortingEnabled = ui->tableWidget->isSortingEnabled();
     ui->tableWidget->setSortingEnabled(false);
     item_B->setText( QString::fromStdString( strValue ) );
-    item_B->setTextColor( color );
+    item_B->setForeground( color );
     ui->tableWidget->setSortingEnabled(__sortingEnabled);
 
     iMaxKeys++;

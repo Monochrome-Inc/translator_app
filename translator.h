@@ -28,6 +28,8 @@ public:
     ~Translator();
 
     void AddItem( std::string strItem, bool bLang );
+    void AddItem( std::string strItem, std::string strValue, bool bLang );
+    void AddItem( std::string strItem, std::string strValue, std::string strLang );
     void RemoveItem( std::string strItem, bool bLang );
     void SaveTableValue(int tableid, std::string lang, std::string key, QString value);
     void closeEvent(QCloseEvent *event);
@@ -35,6 +37,8 @@ public:
     bool MinimizeSave();
 
 public slots:
+    void ClearFile();
+    void OpenKeyValueImport();
     void OpenOptions();
     void ShowAbout();
     void ShowQTAbout();
@@ -76,6 +80,7 @@ private:
     bool bFileLoaded;
     bool bConfigLoaded;
     bool bHasModifiedFile;
+    bool bIgnoreAddItemError;
 
     std::string strCurrentLang = "lang_english";
     std::string	strFileLocation;

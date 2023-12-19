@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>679</width>
-    <height>387</height>
+    <width>869</width>
+    <height>490</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -83,7 +83,7 @@
       <item row="2" column="0" colspan="3">
        <widget class="QLabel" name="label_9">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The location where we will save our backed up files at. By default, it will read the &lt;span style=&quot; font-weight:600;&quot;&gt;/translator_auto_backup&lt;/span&gt; folder under Zombie Panic! Source Mod Tools root directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The location where we will save our backed up files at. By default, it will read the &lt;span style=&quot; font-weight:600;&quot;&gt;translator_auto_backup&lt;/span&gt; folder from this application's root folder.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignHCenter|Qt::AlignTop</set>
@@ -125,7 +125,7 @@
       <item row="1" column="0" colspan="3">
        <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The main path for opening files. By default, it will read the &lt;span style=&quot; font-weight:600;&quot;&gt;zps/translations&lt;/span&gt; folder under Zombie Panic! Source root install directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The main path for opening files. This needs to read the &lt;span style=&quot; font-weight:600;&quot;&gt;translations&lt;/span&gt; folder where the game is installed at.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignHCenter|Qt::AlignTop</set>
@@ -160,7 +160,7 @@
       <item row="2" column="0" colspan="3">
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The location where we will export our Json Language files. By default, it will read the &lt;span style=&quot; font-weight:600;&quot;&gt;zps/translations&lt;/span&gt; folder under Zombie Panic! Source root directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The location where we will export our Json Language files. By default, it will read the &lt;span style=&quot; font-weight:600;&quot;&gt;translations&lt;/span&gt; from this application's root folder.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignHCenter|Qt::AlignTop</set>
