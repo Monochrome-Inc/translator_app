@@ -21,6 +21,8 @@ class KeyValues
 {
 public:
     KeyValues( const char *setName );
+    void SetString( const QString szKey, const QString szValue );
+    bool SaveFile( const QString szPath, const QString szLanguage );
     KeyValueRead_e LoadFile( const QString szFile );
     void GrabKeyValues( std::list<KeyValueData> &keys );
     QString GrabLanguageID() { return m_Language; };

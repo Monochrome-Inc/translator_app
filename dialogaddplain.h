@@ -16,6 +16,7 @@ public:
     ~DialogAddPlain();
     void SetText( QString strText );
     void IsLanguage( bool state );
+    void IsNewTranslationFile( bool state ) { bIsNewTranslationFile = state; }
 
 public slots:
     void accept();
@@ -23,6 +24,7 @@ public slots:
 private:
     Ui::DialogAddPlain *ui;
     bool bIsLang;
+    bool bIsNewTranslationFile;
 };
 
 #endif // DIALOGADDPLAIN_H

@@ -7,7 +7,9 @@ DialogAddPlain::DialogAddPlain(QWidget *parent) :
     ui(new Ui::DialogAddPlain)
 {
     ui->setupUi(this);
+    ui->lineEdit->setFocus(Qt::FocusReason::ActiveWindowFocusReason);
     bIsLang = false;
+    bIsNewTranslationFile = false;
 }
 
 DialogAddPlain::~DialogAddPlain()
@@ -32,6 +34,9 @@ void DialogAddPlain::accept()
 {
     Translator *translator = dynamic_cast<Translator *>( parentWidget() );
     if ( !translator ) return;
-    translator->AddItem( ui->lineEdit->text().toStdString(), bIsLang );
+    if ( bIsNewTranslationFile )
+        translator->OnNewTranslationCreated( ui->lineEdit->text() );
+    else
+        translator->AddItem( ui->lineEdit->text().toStdString(), bIsLang );
     close();
 }

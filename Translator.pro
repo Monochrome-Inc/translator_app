@@ -29,8 +29,8 @@ CONFIG += c++11
 
 SOURCES += \
     KeyValues.cpp \
-        main.cpp \
-        translator.cpp \
+    main.cpp \
+    translator.cpp \
     dialogadd.cpp \
     dialogremove.cpp \
     dialogaddplain.cpp \
@@ -39,7 +39,7 @@ SOURCES += \
 
 HEADERS += \
     KeyValues.h \
-        translator.h \
+    translator.h \
     dialogadd.h \
     dialogremove.h \
     dialogaddplain.h \
@@ -47,7 +47,7 @@ HEADERS += \
     dialogabout.h
 
 FORMS += \
-        translator.ui \
+    translator.ui \
     dialogadd.ui \
     dialogremove.ui \
     dialogaddplain.ui \

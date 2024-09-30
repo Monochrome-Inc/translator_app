@@ -22,13 +22,17 @@
 Json::Value JsonData;
 Json::Value JsonConfig;
 
-void ReplaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace)
+bool ReplaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace)
 {
+    bool bFound = false;
     size_t pos = 0;
     while ((pos = subject.find(search, pos)) != std::string::npos) {
         subject.replace(pos, search.length(), replace);
         pos += replace.length();
+        if ( !bFound )
+            bFound = true;
     }
+    return bFound;
 }
 
 Translator::Translator(QWidget *parent) :
@@ -124,6 +128,7 @@ void Translator::KeyModify(QTableWidgetItem *item)
     DialogAdd *pDialog = new DialogAdd(this);
     pDialog->setAttribute(Qt::WA_DeleteOnClose);
     pDialog->show();
+    pDialog->setWindowTitle( "Modifying: " + widget->text() );
 
     // Set our string
     std::string strVariable;
@@ -402,7 +407,7 @@ void Translator::LangAdd()
     DialogAddPlain *pDialog = new DialogAddPlain(this);
     pDialog->setAttribute(Qt::WA_DeleteOnClose);
     pDialog->show();
-    pDialog->setWindowTitle( "Language" );
+    pDialog->setWindowTitle( "Add New Language" );
     pDialog->SetText( "Add Language" );
     pDialog->IsLanguage( true );
     // Resize our window size
@@ -430,7 +435,7 @@ void Translator::KeyAdd()
     DialogAddPlain *pDialog = new DialogAddPlain(this);
     pDialog->setAttribute(Qt::WA_DeleteOnClose);
     pDialog->show();
-    pDialog->setWindowTitle( "Translation Key" );
+    pDialog->setWindowTitle( "Add New Translation Key" );
     pDialog->SetText( "Add Translation Key" );
     // Resize our window size
     if ( !JsonConfig["dialog_add"]["width"].empty() && !JsonConfig["dialog_add"]["height"].empty() )
@@ -443,7 +448,7 @@ void Translator::KeyRemove()
     DialogRemove *pDialog = new DialogRemove(this);
     pDialog->setAttribute(Qt::WA_DeleteOnClose);
     pDialog->show();
-    pDialog->setWindowTitle( "Translation Key" );
+    pDialog->setWindowTitle( "Remove Translation Key" );
     pDialog->SetText( "Remove Translation Key" );
     pDialog->SetDialogValues( JsonData["lang_english"], false );
     // Resize our window size
@@ -606,6 +611,69 @@ void Translator::RemoveItem(std::string strItem, bool bLang)
     ui->statusBar->showMessage( QString::fromStdString( strStatusMsg ), 10000 );
 
     SetModified( true );
+}
+
+void Translator::NewFile()
+{
+    if ( !bHasModifiedFile )
+    {
+        // Create Dialog
+        DialogAddPlain *pDialog = new DialogAddPlain(this);
+        pDialog->setAttribute(Qt::WA_DeleteOnClose);
+        pDialog->show();
+        pDialog->setWindowTitle( "New Translation File" );
+        pDialog->SetText( "my_translation.json" );
+        pDialog->IsNewTranslationFile(true);
+        return;
+    }
+    QMessageBox::StandardButton resBtn = QMessageBox::question(
+        this, "Translator",
+        tr("Do you want to save your changes?\n"),
+        QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel,
+        QMessageBox::Yes
+        );
+    if (resBtn == QMessageBox::Cancel) return;
+    if (resBtn == QMessageBox::Yes)
+        SaveFile();
+    DialogAddPlain *pDialog = new DialogAddPlain(this);
+    pDialog->setAttribute(Qt::WA_DeleteOnClose);
+    pDialog->show();
+    pDialog->setWindowTitle( "New Translation File" );
+    pDialog->SetText( "my_translation.json" );
+    pDialog->IsNewTranslationFile(true);
+}
+
+void Translator::OnNewTranslationCreated( QString strFile )
+{
+    JsonData.clear();
+    AddItem("english", "UI_Example", "Example String");
+    bFileLoaded = true;
+
+    strFileLoaded = strFile.toStdString();
+    strFileLocation = "./translations";
+
+    ui->actionClear->setEnabled( true );
+    ui->actionSave->setEnabled( true );
+    ui->actionLangAdd->setEnabled( true );
+    ui->actionKeyCreate->setEnabled( true );
+    ui->actionLangExport->setEnabled( true );
+    ui->actionLangImport->setEnabled( true );
+
+    LoadTranslation();
+
+    bConfigLoaded = true;
+
+    SetModified( false );
+    SaveConfig();
+
+    // Enable it
+    ui->listWidget->setEnabled( true );
+    ui->tableWidget->setEnabled( true );
+
+    std::string strStatusMsg = strFile.toStdString();
+    strStatusMsg += " has been created!";
+
+    ui->statusBar->showMessage( QString::fromStdString( strStatusMsg ), 10000 );
 }
 
 void Translator::OpenFile()

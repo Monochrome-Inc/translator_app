@@ -8,6 +8,7 @@ DialogAdd::DialogAdd(QWidget *parent) :
     ui(new Ui::DialogAdd)
 {
     ui->setupUi(this);
+    ui->plainTextEdit->setFocus(Qt::FocusReason::ActiveWindowFocusReason);
 }
 
 DialogAdd::~DialogAdd()

@@ -1,8 +1,12 @@
 #include "KeyValues.h"
+#include "translator.h"
+#include "qforeach.h"
 
 #include <QFile>
 #include <QTextStream>
 #include <QChar>
+
+#include <fstream>
 
 static bool s_bMultiLineValue = false;
 static KeyValueData s_MultiLineValue;
@@ -12,6 +16,53 @@ KeyValues::KeyValues( const char *setName )
     m_Language = "";
     m_Name = setName;
     m_Keys.clear();
+}
+
+void KeyValues::SetString( const QString szKey, const QString szValue )
+{
+    KeyValueData data;
+    data.Key = szKey;
+    data.Value = szValue;
+    m_Keys.push_back( data );
+}
+
+bool KeyValues::SaveFile( const QString szPath, const QString szLangauge )
+{
+    if ( szPath.isEmpty() ) return false;
+    std::ofstream file_id;
+    std::string szSTDLangFile = szPath.toStdString();
+    std::string szLanguageStripped = szLangauge.toStdString();
+    ReplaceStringInPlace( szLanguageStripped, "lang_", "" );
+    std::string szReplaceString = "_" + szLanguageStripped + ".txt";
+    if ( !ReplaceStringInPlace( szSTDLangFile, ".txt", szReplaceString ) )
+        szSTDLangFile += szReplaceString;
+
+    file_id.open( szSTDLangFile );
+    //Output will be this:
+/*
+ * "lang"
+ * {
+ *    "Language" "english"
+ *    "Tokens"
+ *    {
+ *       "UI_EXAMPLE"   "My Sample Text"
+ *       ...
+ *    }
+ * }
+*/
+    file_id << "\"lang\"\n";
+    file_id << "{\n";
+        file_id << "\t\"Language\"\t\"" << szLanguageStripped << "\"\n";
+        file_id << "\t\"Tokens\"\n";
+        file_id << "\t{\n";
+        foreach(KeyValueData data, m_Keys)
+        {
+            file_id << "\t\t\"" << data.Key.toStdString() << "\"\t\"" << data.Value.toStdString() << "\"\n";
+        }
+        file_id << "\t}\n";
+    file_id << "}\n";
+    file_id.close();
+    return true;
 }
 
 KeyValueRead_e KeyValues::LoadFile( const QString szFile )
@@ -70,20 +121,21 @@ KeyValueRead_e KeyValues::LoadFile( const QString szFile )
     return KVRead_ERR_NOTLANG;
 }
 
-void KeyValues::Export( const QString szPath, const QString szFile, Json::Value data )
+void KeyValues::Export( const QString szPath, const QString szFile, Json::Value JsonData )
 {
-// TODO - Export the json data to KeyValues
-//Output must be this:
-/*
- * "lang"
- * {
- *    "Language" "english"
- *    "Tokens"
- *    {
- *       "UI_EXAMPLE"   "My Sample Text"
- *    }
- * }
-*/
+    m_Keys.clear();
+    // Exports the json data to KeyValues
+    std::vector<std::string> langgroups = JsonData.getMemberNames();
+    foreach(std::string language, langgroups)
+    {
+        std::vector<std::string> keygroups = JsonData[language].getMemberNames();
+        foreach(std::string key, keygroups)
+        {
+            SetString( QString::fromStdString(key), QString::fromStdString(JsonData[language][key].asString()) );
+        }
+        SaveFile( szPath, QString::fromStdString(language) );
+        m_Keys.clear();
+    }
 }
 
 bool KeyValues::IsLineIgnored( QString szLine )
@@ -108,6 +160,7 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
     };
     QouteState eState = BEGIN;
 
+    bool bFoundAValidToken = false;
     bool bSlashQoute = false;
     bool bMultilineReading = s_bMultiLineValue;
     if ( !bTokens )
@@ -116,6 +169,9 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
     // If not multiline
     if ( !bMultilineReading )
     {
+        // If the line is just straight up empty.
+        //if ( szLine == "" ) return data;
+
         foreach( QChar var, szLine )
         {
             // We don't want to include the qoute
@@ -124,7 +180,7 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
             {
                 switch( eState )
                 {
-                    case BEGIN: eState = KEY_START; break;
+                    case BEGIN: eState = KEY_START; bFoundAValidToken = true; break;
                     case KEY_START: eState = KEY_END; break;
                     case KEY_END: eState = VALUE_START; break;
                     case VALUE_START: eState = VALUE_END; break;
@@ -168,6 +224,13 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
 
     if (bTokens)
     {
+        if ( !bFoundAValidToken )
+        {
+            data.Key.clear();
+            data.Value.clear();
+            return data;
+        }
+
         // If eState is VALUE_END, then we ain't a multiline value
         if ( eState == VALUE_END )
         {

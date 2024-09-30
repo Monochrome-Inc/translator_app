@@ -19,6 +19,8 @@ namespace Ui
 extern Json::Value JsonData;
 extern Json::Value JsonConfig;
 
+extern bool ReplaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace);
+
 class Translator : public QMainWindow
 {
     Q_OBJECT
@@ -35,6 +37,7 @@ public:
     void closeEvent(QCloseEvent *event);
     void SaveOptions( std::string strMain, std::string strExport, int iTimer, std::string strBackup, int iTimer_Backup );
     bool MinimizeSave();
+    void OnNewTranslationCreated( QString strFile );
 
 public slots:
     void ClearFile();
@@ -43,6 +46,7 @@ public slots:
     void OpenOptions();
     void ShowAbout();
     void ShowQTAbout();
+    void NewFile();
     void OpenFile();
     void SaveFile();
     void BackupFile();
