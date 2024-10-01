@@ -9,7 +9,14 @@
 #include <fstream>
 
 static bool s_bMultiLineValue = false;
-static KeyValueData s_MultiLineValue;
+static KeyValueData EmptyKeyValues()
+{
+    KeyValueData data;
+    data.Value.clear();
+    data.Key.clear();
+    return data;
+}
+static KeyValueData s_MultiLineValue = EmptyKeyValues();
 
 KeyValues::KeyValues( const char *setName )
 {
@@ -224,7 +231,7 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
 
     if (bTokens)
     {
-        if ( !bFoundAValidToken )
+        if ( !bFoundAValidToken && !s_bMultiLineValue )
         {
             data.Key.clear();
             data.Value.clear();
