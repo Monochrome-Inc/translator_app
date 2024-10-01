@@ -6,7 +6,7 @@ Support for KeyValues importing and exporting (translation files that Source Eng
 
 ## Requirements
 
-* Qt 4.x or higher.
+* Qt 6.6.1 or higher.
 * Visual Studio 2019 or higher.
 * 64-Bit architecture.
 
