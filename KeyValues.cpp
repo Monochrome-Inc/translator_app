@@ -5,8 +5,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QChar>
-
-#include <fstream>
+#include <QDebug>
 
 static bool s_bMultiLineValue = false;
 static KeyValueData EmptyKeyValues()
@@ -36,7 +35,6 @@ void KeyValues::SetString( const QString szKey, const QString szValue )
 bool KeyValues::SaveFile( const QString szPath, const QString szLangauge )
 {
     if ( szPath.isEmpty() ) return false;
-    std::ofstream file_id;
     std::string szSTDLangFile = szPath.toStdString();
     std::string szLanguageStripped = szLangauge.toStdString();
     ReplaceStringInPlace( szLanguageStripped, "lang_", "" );
@@ -44,7 +42,11 @@ bool KeyValues::SaveFile( const QString szPath, const QString szLangauge )
     if ( !ReplaceStringInPlace( szSTDLangFile, ".txt", szReplaceString ) )
         szSTDLangFile += szReplaceString;
 
-    file_id.open( szSTDLangFile );
+    QFile file( QString::fromStdString(szSTDLangFile) );
+    if (!file.open(QIODevice::WriteOnly)) return false;
+    QTextStream stream( &file );
+    stream.setEncoding( QStringConverter::Encoding::Utf16LE );
+    stream.setGenerateByteOrderMark( true );
     //Output will be this:
 /*
  * "lang"
@@ -57,18 +59,19 @@ bool KeyValues::SaveFile( const QString szPath, const QString szLangauge )
  *    }
  * }
 */
-    file_id << "\"lang\"\n";
-    file_id << "{\n";
-        file_id << "\t\"Language\"\t\"" << szLanguageStripped << "\"\n";
-        file_id << "\t\"Tokens\"\n";
-        file_id << "\t{\n";
+    stream << "\"lang\"\n";
+    stream << "{\n";
+        stream << "\t\"Language\"\t\"" << QString::fromStdString(szLanguageStripped) << "\"\n";
+        stream << "\t\"Tokens\"\n";
+        stream << "\t{\n";
         foreach(KeyValueData data, m_Keys)
         {
-            file_id << "\t\t\"" << data.Key.toStdString() << "\"\t\"" << data.Value.toStdString() << "\"\n";
+            stream << "\t\t\"" << data.Key << "\"\t\"" << data.Value << "\"\n";
         }
-        file_id << "\t}\n";
-    file_id << "}\n";
-    file_id.close();
+        stream << "\t}\n";
+    stream << "}\n";
+    stream.flush();
+    file.close();
     return true;
 }
 
@@ -120,6 +123,7 @@ KeyValueRead_e KeyValues::LoadFile( const QString szFile )
                 break;
             }
         }
+        f.flush();
         f.close();
         if ( eTranslationKV == ReadNone )
             return KVRead_ERR_NOTLANG;
