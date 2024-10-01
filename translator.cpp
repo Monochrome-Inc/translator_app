@@ -150,11 +150,6 @@ void Translator::SaveTableValue(int tableid, std::string lang, std::string key, 
     // Grab our stuff
     QTableWidgetItem *widget = ui->tableWidget->item( tableid, 0 );
     if ( !widget ) return;
-
-    QTextCodec *codec = QTextCodec::codecForName( "UTF-16" );
-    QTextEncoder *encoderWithoutBom = codec->makeEncoder( QTextCodec::IgnoreHeader );
-    QByteArray array = encoderWithoutBom->fromUnicode( value );
-
     std::string output = value.toUtf8().data();
     widget->setText( QString::fromStdString( output ) );
     widget->setForeground( QColor(255, 255, 255) );
@@ -202,7 +197,7 @@ void Translator::Export()
     Json::Value JsonTemp;
     // Grab our language groups
     std::vector<std::string> langgroups = JsonData.getMemberNames();
-    for ( auto language : langgroups )
+    foreach( std::string language, langgroups )
     {
         // Skip, since we already added it first
         if (language != strCurrentLang) continue;
@@ -246,7 +241,7 @@ void Translator::Import()
     {
         // Grab our language groups
         std::vector<std::string> langgroups = JSONReaderData.getMemberNames();
-        for ( auto language : langgroups )
+        foreach( std::string language, langgroups )
         {
             JsonData[language] = JSONReaderData[language];
             std::string strStatusMsg = language;
@@ -327,7 +322,7 @@ void Translator::OpenKeyValueImport()
             AddItem( pKV->GrabLanguageID().toStdString(), true );
             std::list<KeyValueData> _Keys;
             pKV->GrabKeyValues( _Keys );
-            for ( auto data : _Keys )
+            foreach( KeyValueData data, _Keys )
                 AddItem( data.Key.toStdString(), data.Value.toStdString(), _lang );
             bIgnoreAddItemError = false;
             SetModified( true );
@@ -472,7 +467,7 @@ void Translator::KeyRemove()
 bool HasLanguage(std::string strLang)
 {
     std::vector<std::string> langgroups = JsonData.getMemberNames();
-    for (auto language : langgroups)
+    foreach(std::string language, langgroups)
     {
         if ( language == strLang ) return true;
     }
@@ -482,7 +477,7 @@ bool HasLanguage(std::string strLang)
 bool HasKey(std::string strKey)
 {
     std::vector<std::string> keygroups = JsonData["lang_english"].getMemberNames();
-    for (auto key : keygroups)
+    foreach(std::string key, keygroups)
     {
         if ( key == strKey ) return true;
     }
@@ -581,7 +576,7 @@ void Translator::RemoveItem(std::string strItem, bool bLang)
     if ( bLang )
     {
         std::vector<std::string> keygroups = JsonData.getMemberNames();
-        for (auto key : keygroups)
+        foreach(std::string key, keygroups)
         {
             // Skip
             if (key == strValue) continue;
@@ -592,10 +587,10 @@ void Translator::RemoveItem(std::string strItem, bool bLang)
     else
     {
         std::vector<std::string> langgroups = JsonData.getMemberNames();
-        for (auto language : langgroups)
+        foreach(std::string language, langgroups)
         {
             std::vector<std::string> keygroups = JsonData[language].getMemberNames();
-            for (auto key : keygroups)
+            foreach(std::string key, keygroups)
             {
                 // Skip
                 if (key == strValue) continue;
@@ -758,7 +753,7 @@ void Translator::BackupFile()
     {
         // Grab our language groups
         std::vector<std::string> langgroups = JsonData.getMemberNames();
-        for ( auto language : langgroups )
+        foreach( std::string language, langgroups )
         {
             // Skip, since we already added it first
             if (language != strCurrentLang) continue;
@@ -870,7 +865,7 @@ void Translator::OpenSpecificFile(std::string strLocation, std::string strFile, 
         if ( bConfigClear )
         {
             std::vector<std::string> langgroups = JSONReaderData.getMemberNames();
-            for ( auto language : langgroups )
+            foreach( std::string language, langgroups )
             {
                 if ( !JsonConfig[language].empty() )
                     JsonConfig.removeMember( language );
@@ -1023,7 +1018,7 @@ void Translator::LoadTranslation()
 
     // Load our language
     int iLang = 0;
-    for ( auto language : langgroups )
+    foreach( std::string language, langgroups )
     {
         std::string str = language;
         str.replace( 0, 5, "" );
@@ -1057,7 +1052,7 @@ void Translator::LoadTranslationKeys(Json::Value jdata)
     item_table->setText( QApplication::translate("Translator", "Translation Value", nullptr) );
 
     int iKeys = 0;
-    for (auto translatekey : translationkeys)
+    foreach(std::string translatekey, translationkeys)
     {
         AddKey( translatekey, jdata[translatekey].asString(), QColor(255, 255, 255) );
         // Add to foundkeys list
@@ -1070,7 +1065,7 @@ void Translator::LoadTranslationKeys(Json::Value jdata)
     if ( strCurrentLang != "lang_english" )
     {
         translationkeys = JsonData["lang_english"].getMemberNames();
-        for (auto translatekey : translationkeys)
+        foreach(std::string translatekey, translationkeys)
         {
             bool bCanAddKey = true;
             for (it = FoundKeys.begin(); it < FoundKeys.end(); it++)
