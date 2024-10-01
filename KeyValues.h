@@ -28,6 +28,9 @@ public:
     QString GrabLanguageID() { return m_Language; };
     void Export( const QString szPath, const QString szFile, Json::Value data );
 private:
+    // This will be read if we find \r, and everything became 1 single damn line.
+    // This happens with very large files, one example being contagion_ui_english.txt
+    KeyValueRead_e LoadBloatFile( const QString szFile );
     bool IsLineIgnored( QString szLine );
     KeyValueData ReadLine( QString szLine, bool bTokens );
     QString m_Language;

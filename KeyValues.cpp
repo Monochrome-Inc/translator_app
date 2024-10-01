@@ -80,6 +80,7 @@ KeyValueRead_e KeyValues::LoadFile( const QString szFile )
     QFile f( szFile );
     if ( f.open(QIODevice::ReadOnly) )
     {
+        int lines = 0;
         s_bMultiLineValue = false;
         enum TranslationReading
         {
@@ -94,6 +95,7 @@ KeyValueRead_e KeyValues::LoadFile( const QString szFile )
         {
             QString line = in.readLine();
             KeyValueData data = ReadLine( line, (eTranslationKV == ReadTokens) );
+            lines++;
             switch (eTranslationKV)
             {
                 case ReadNone:
@@ -121,6 +123,68 @@ KeyValueRead_e KeyValues::LoadFile( const QString szFile )
                     m_Keys.push_back( data );
                 }
                 break;
+            }
+        }
+        f.flush();
+        f.close();
+        // if equals to 1, then it may be a bloat file
+        if ( lines == 1 )
+            return LoadBloatFile( szFile );
+        if ( eTranslationKV == ReadNone )
+            return KVRead_ERR_NOTLANG;
+        return (m_Keys.size() > 0) ? KVRead_OK : KVRead_ERR_LANG_NOT_FOUND;
+    }
+    return KVRead_ERR_NOTLANG;
+}
+
+KeyValueRead_e KeyValues::LoadBloatFile( const QString szFile )
+{
+    QFile f( szFile );
+    if ( f.open(QIODevice::ReadOnly) )
+    {
+        s_bMultiLineValue = false;
+        enum TranslationReading
+        {
+            ReadNone = 0,
+            ReadLang,
+            ReadTokens
+        };
+
+        TranslationReading eTranslationKV = ReadNone;
+        QTextStream in(&f);
+        QString rawdata = in.readAll();
+        QList<QString> lines = rawdata.split(QRegularExpression("\r"));
+        foreach(auto line, lines)
+        {
+            //qInfo() << "Line: [" << line.toStdString() << "]";
+            KeyValueData data = ReadLine( line, (eTranslationKV == ReadTokens) );
+            switch (eTranslationKV)
+            {
+            case ReadNone:
+            {
+                if ( data.Key == "lang" )
+                    eTranslationKV = ReadLang;
+            }
+            break;
+            case ReadLang:
+            {
+                if ( data.Key == "Language" )
+                    m_Language = data.Value.toLower();
+                else if ( data.Key == "Tokens" && m_Language != "" )
+                    eTranslationKV = ReadTokens;
+            }
+            break;
+            case ReadTokens:
+            {
+                // Did the previous data not have an end qoute?
+                if ( s_bMultiLineValue ) continue;
+                // Ignore comments etc.
+                if ( IsLineIgnored( line ) ) continue;
+                // We can't add nothing
+                if ( data.Key == "" ) continue;
+                m_Keys.push_back( data );
+            }
+            break;
             }
         }
         f.flush();
