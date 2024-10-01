@@ -372,12 +372,25 @@ void Translator::OpenKeyValueImport()
 
 void Translator::OpenExport()
 {
-    QString savePath = QFileDialog::getSaveFileName(
-        this,
-        tr("Export Translation"),
-        QString::fromStdString(strMainPath),
-        tr("Translation KeyValue Files (*.txt)")
-    );
+    std::string strPath = strFileLocation;
+    std::string strfile = strFileLoaded;
+    // If we loaded from config, use that instead.
+    if ( bConfigLoaded )
+    {
+        strPath = JsonConfig["file_path"].asString();
+        strfile = JsonConfig["file_name"].asString();
+    }
+
+    ReplaceStringInPlace( strfile, ".json", ".txt" );
+    ReplaceStringInPlace( strPath, ".json", ".txt" );
+
+    auto export_dialog( new QFileDialog( this ) );
+    export_dialog->setWindowModality( Qt::WindowModal );
+    export_dialog->setFileMode( QFileDialog::AnyFile );
+    export_dialog->setAcceptMode( QFileDialog::AcceptSave );
+    export_dialog->selectFile( QString::fromStdString( strfile ) );
+
+    QString savePath = export_dialog->getSaveFileName( this, tr("Export Translations"), QString::fromStdString( strPath ), tr("Translation KeyValue Files (*.txt)") );
     if ( savePath == "" ) return;
     QFile f(savePath);
     QFileInfo fileInfo(f.fileName());
