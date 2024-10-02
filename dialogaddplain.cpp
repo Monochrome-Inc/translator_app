@@ -25,6 +25,11 @@ void DialogAddPlain::SetText(QString strText)
     ui->label->setText( strText );
 }
 
+void DialogAddPlain::SetDefaultTextLine(QString strText)
+{
+    ui->lineEdit->setText( strText );
+}
+
 void DialogAddPlain::IsLanguage(bool state)
 {
     bIsLang = state;

@@ -15,6 +15,7 @@ public:
     explicit DialogAddPlain(QWidget *parent = nullptr);
     ~DialogAddPlain();
     void SetText( QString strText );
+    void SetDefaultTextLine( QString strText );
     void IsLanguage( bool state );
     void IsNewTranslationFile( bool state ) { bIsNewTranslationFile = state; }
 
