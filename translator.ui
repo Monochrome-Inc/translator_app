@@ -2036,8 +2036,10 @@ QAbstractView:selected {
     <property name="separatorsCollapsible">
      <bool>false</bool>
     </property>
+    <addaction name="actionNewFile"/>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
+    <addaction name="separator"/>
     <addaction name="actionExport"/>
     <addaction name="actionImport"/>
     <addaction name="actionClear"/>
@@ -2229,6 +2231,14 @@ QAbstractView:selected {
    </property>
   </action>
   <action name="actionNew">
+   <property name="text">
+    <string>New</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionNewFile">
    <property name="text">
     <string>New</string>
    </property>
@@ -2551,14 +2561,14 @@ QAbstractView:selected {
    </hints>
   </connection>
   <connection>
-   <sender>actionNew</sender>
+   <sender>actionNewFile</sender>
    <signal>triggered()</signal>
    <receiver>Translator</receiver>
    <slot>NewFile()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>433</x>
-     <y>192</y>
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
      <x>433</x>
