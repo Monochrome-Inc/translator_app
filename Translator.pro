@@ -1,6 +1,8 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2018-12-15T15:51:49
+# Zombie Panic! Source Translator App Qt Project.
+# Created: 2018-12-15
+# Last Modified: 2024-10-02
 #
 #-------------------------------------------------
 
