@@ -67,7 +67,25 @@ bool KeyValues::SaveFile( const QString szPath, const QString szLangauge )
         stream << "\t{\n";
         for (const auto &data : m_Keys)
         {
-            stream << "\t\t\"" << data.Key << "\"\t\"" << data.Value << "\"\n";
+            // Check for special keys, if true, then add [$FOO] at the end.
+            bool bFoundSpecialKey = false;
+            QString SpecialString;
+            for (const auto &var : data.Key)
+            {
+                if ( '$' == var )
+                    bFoundSpecialKey = true;
+                if ( bFoundSpecialKey )
+                    SpecialString += var;
+            }
+            // If the special key is empty, do the normal output
+            if ( SpecialString.isEmpty() )
+                stream << "\t\t\"" << data.Key << "\"\t\"" << data.Value << "\"\n";
+            else
+            {
+                // We can't use data.Key directly, as it's a const. So we need to copy it temporarily and replace the string.
+                QString newKey = data.Key;
+                stream << "\t\t\"" << newKey.replace(SpecialString, "") << "\"\t\"" << data.Value << "\"\t[" << SpecialString << "]\n";
+            }
         }
         stream << "\t}\n";
     stream << "}\n";
@@ -154,7 +172,8 @@ KeyValueRead_e KeyValues::LoadBloatFile( const QString szFile )
         TranslationReading eTranslationKV = ReadNone;
         QTextStream in(&f);
         QString rawdata = in.readAll();
-        QList<QString> lines = rawdata.split(QRegularExpression("\r"));
+        static QRegularExpression s_BloatCheck("\r");
+        QList<QString> lines = rawdata.split(s_BloatCheck);
         for (const auto &line : lines)
         {
             //qInfo() << "Line: [" << line.toStdString() << "]";
@@ -248,9 +267,6 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
     // If not multiline
     if ( !bMultilineReading )
     {
-        // If the line is just straight up empty.
-        //if ( szLine == "" ) return data;
-
         for (const auto &var : szLine)
         {
             // We don't want to include the qoute
