@@ -232,7 +232,10 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
         KEY_START,
         KEY_END,
         VALUE_START,
-        VALUE_END
+        VALUE_END,
+        VALUE_SPECIAL_KEY_FOUND,
+        VALUE_SPECIAL_KEY_VALID,
+        VALUE_SPECIAL_KEY_END
     };
     QouteState eState = BEGIN;
 
@@ -275,6 +278,37 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
                 bSlashQoute = true;
             else
                 bSlashQoute = false;
+            // At the very end, check if we got a special key assigned.
+            if ( eState >= VALUE_END )
+            {
+                switch( eState )
+                {
+                    case VALUE_END:
+                    {
+                        if ( '[' == var )
+                            eState = VALUE_SPECIAL_KEY_FOUND;
+                    }
+                    break;
+                    case VALUE_SPECIAL_KEY_FOUND:
+                    {
+                        if ( '$' == var )
+                            eState = VALUE_SPECIAL_KEY_VALID;
+                    }
+                    break;
+                    case VALUE_SPECIAL_KEY_VALID:
+                    {
+                        if ( ']' == var )
+                            eState = VALUE_SPECIAL_KEY_END;
+                    }
+                    break;
+                    default: break;
+                }
+                if ( eState == VALUE_SPECIAL_KEY_VALID )
+                {
+                    // Apply the special key
+                    data.Key += var;
+                }
+            }
         }
     }
     else
@@ -295,6 +329,37 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
                 bSlashQoute = true;
             else
                 bSlashQoute = false;
+            // At the very end, check if we got a special key assigned.
+            if ( eState >= VALUE_END )
+            {
+                switch( eState )
+                {
+                    case VALUE_END:
+                    {
+                        if ( '[' == var )
+                            eState = VALUE_SPECIAL_KEY_FOUND;
+                    }
+                    break;
+                    case VALUE_SPECIAL_KEY_FOUND:
+                    {
+                        if ( '$' == var )
+                            eState = VALUE_SPECIAL_KEY_VALID;
+                    }
+                    break;
+                    case VALUE_SPECIAL_KEY_VALID:
+                    {
+                        if ( ']' == var )
+                            eState = VALUE_SPECIAL_KEY_END;
+                    }
+                    break;
+                    default: break;
+                }
+                if ( eState == VALUE_SPECIAL_KEY_VALID )
+                {
+                    // Apply the special key
+                    s_MultiLineValue.Key += var;
+                }
+            }
         }
     }
 
@@ -307,8 +372,8 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
             return data;
         }
 
-        // If eState is VALUE_END, then we ain't a multiline value
-        if ( eState == VALUE_END )
+        // If eState is VALUE_END (or higher), then we ain't a multiline value
+        if ( eState >= VALUE_END )
         {
             if ( s_bMultiLineValue )
             {
