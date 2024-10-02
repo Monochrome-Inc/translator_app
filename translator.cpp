@@ -625,42 +625,56 @@ void Translator::RemoveItem(std::string strItem, bool bLang)
 
 void Translator::NewFile()
 {
-    if ( !bHasModifiedFile )
+    if ( bHasModifiedFile )
     {
-        // Create Dialog
-        DialogAddPlain *pDialog = new DialogAddPlain(this);
-        pDialog->setAttribute(Qt::WA_DeleteOnClose);
-        pDialog->show();
-        pDialog->setWindowTitle( "New Translation File" );
-        pDialog->SetText( "my_translation.json" );
-        pDialog->IsNewTranslationFile(true);
-        return;
+        QMessageBox::StandardButton resBtn = QMessageBox::question(
+            this, "Translator",
+            tr("Do you want to save your changes?\n"),
+            QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel,
+            QMessageBox::Yes
+            );
+        if (resBtn == QMessageBox::Cancel) return;
     }
-    QMessageBox::StandardButton resBtn = QMessageBox::question(
-        this, "Translator",
-        tr("Do you want to save your changes?\n"),
-        QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel,
-        QMessageBox::Yes
-        );
-    if (resBtn == QMessageBox::Cancel) return;
-    if (resBtn == QMessageBox::Yes)
-        SaveFile();
-    DialogAddPlain *pDialog = new DialogAddPlain(this);
-    pDialog->setAttribute(Qt::WA_DeleteOnClose);
-    pDialog->show();
-    pDialog->setWindowTitle( "New Translation File" );
-    pDialog->SetText( "my_translation.json" );
-    pDialog->IsNewTranslationFile(true);
+
+    auto newfile_dialog( new QFileDialog( this ) );
+    newfile_dialog->setWindowModality( Qt::WindowModal );
+    newfile_dialog->setFileMode( QFileDialog::AnyFile );
+    newfile_dialog->setAcceptMode( QFileDialog::AcceptSave );
+
+    QString savePath = newfile_dialog->getSaveFileName( this, tr("Create New Translations"), "./translations/", tr("Translation Files (*.json)") );
+    if ( savePath == "" ) return;
+    QFile f(savePath);
+    QFileInfo fileInfo(f.fileName());
+    QString filename(fileInfo.fileName());
+    f.close();
+    if ( filename == "" ) return;
+    OnNewTranslationCreated( filename );
 }
 
 void Translator::OnNewTranslationCreated( QString strFile )
 {
+    if ( strFile.isEmpty() )
+    {
+        QMessageBox::question(
+            this, "Translator",
+            tr("You can't create an empty translation file!\n"),
+            QMessageBox::Ok,
+            QMessageBox::Ok
+            );
+        return;
+    }
+    std::string szFile = strFile.toStdString();
+    ReplaceStringInPlace(szFile, ".txt", ".json");
+
+    // If the .json is missing, create it.
+    if ( !strFile.contains( ".json", Qt::CaseSensitivity::CaseInsensitive ) )
+        szFile += ".json";
+
     JsonData.clear();
-    AddItem("english", "UI_Example", "Example String");
     bFileLoaded = true;
 
-    strFileLoaded = strFile.toStdString();
-    strFileLocation = "./translations";
+    strFileLoaded = szFile;
+    strFileLocation = "./translations/" + szFile;
 
     ui->actionClear->setEnabled( true );
     ui->actionSave->setEnabled( true );
@@ -669,20 +683,23 @@ void Translator::OnNewTranslationCreated( QString strFile )
     ui->actionLangExport->setEnabled( true );
     ui->actionLangImport->setEnabled( true );
 
-    LoadTranslation();
-
     bConfigLoaded = true;
 
-    SetModified( false );
-    SaveConfig();
+    // Clear everything
+    LoadTranslation();
+    JsonData.clear();
+
+    AddItem( "english", true );
+    AddItem( "UI2_EXAMPLE_VALUE", false );
+
+    // Save it
+    SaveFile();
 
     // Enable it
     ui->listWidget->setEnabled( true );
     ui->tableWidget->setEnabled( true );
 
-    std::string strStatusMsg = strFile.toStdString();
-    strStatusMsg += " has been created!";
-
+    std::string strStatusMsg = szFile + " has been created!";
     ui->statusBar->showMessage( QString::fromStdString( strStatusMsg ), 10000 );
 }
 
