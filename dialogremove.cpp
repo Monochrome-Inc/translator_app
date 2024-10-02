@@ -28,7 +28,7 @@ void DialogRemove::SetDialogValues(Json::Value jdata, bool bLang)
     bIsLang = bLang;
     ui->comboBox->clear();
     std::vector<std::string> jdatagroups = jdata.getMemberNames();
-    foreach( std::string jvalue, jdatagroups )
+    for (const auto &jvalue : jdatagroups)
     {
         std::string str = jvalue;
         if ( bLang )

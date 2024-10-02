@@ -7,9 +7,6 @@
 #include <QListWidgetItem>
 
 #include "json/writer.h"
-#include "json/reader.h"
-#include <sstream>
-#include <fstream>
 
 namespace Ui
 {

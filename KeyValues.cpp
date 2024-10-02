@@ -1,11 +1,12 @@
 #include "KeyValues.h"
 #include "translator.h"
-#include "qforeach.h"
 
 #include <QFile>
+#include <QFileDevice>
 #include <QTextStream>
 #include <QChar>
 #include <QDebug>
+#include <QRegularExpression>
 
 static bool s_bMultiLineValue = false;
 static KeyValueData EmptyKeyValues()
@@ -64,7 +65,7 @@ bool KeyValues::SaveFile( const QString szPath, const QString szLangauge )
         stream << "\t\"Language\"\t\"" << QString::fromStdString(szLanguageStripped) << "\"\n";
         stream << "\t\"Tokens\"\n";
         stream << "\t{\n";
-        foreach(KeyValueData data, m_Keys)
+        for (const auto &data : m_Keys)
         {
             stream << "\t\t\"" << data.Key << "\"\t\"" << data.Value << "\"\n";
         }
@@ -154,7 +155,7 @@ KeyValueRead_e KeyValues::LoadBloatFile( const QString szFile )
         QTextStream in(&f);
         QString rawdata = in.readAll();
         QList<QString> lines = rawdata.split(QRegularExpression("\r"));
-        foreach(auto line, lines)
+        for (const auto &line : lines)
         {
             //qInfo() << "Line: [" << line.toStdString() << "]";
             KeyValueData data = ReadLine( line, (eTranslationKV == ReadTokens) );
@@ -201,10 +202,10 @@ void KeyValues::Export( const QString szPath, const QString szFile, Json::Value 
     m_Keys.clear();
     // Exports the json data to KeyValues
     std::vector<std::string> langgroups = JsonData.getMemberNames();
-    foreach(std::string language, langgroups)
+    for (const auto &language : langgroups)
     {
         std::vector<std::string> keygroups = JsonData[language].getMemberNames();
-        foreach(std::string key, keygroups)
+        for (const auto &key : keygroups)
         {
             SetString( QString::fromStdString(key), QString::fromStdString(JsonData[language][key].asString()) );
         }
@@ -247,7 +248,7 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
         // If the line is just straight up empty.
         //if ( szLine == "" ) return data;
 
-        foreach( QChar var, szLine )
+        for (const auto &var : szLine)
         {
             // We don't want to include the qoute
             // But if we had a backslash before this qoute, then we simply add it.
@@ -278,7 +279,7 @@ KeyValueData KeyValues::ReadLine( QString szLine, bool bTokens )
     }
     else
     {
-        foreach( QChar var, szLine )
+        for (const auto &var : szLine)
         {
             // We don't want to include the qoute
             // But if we had a backslash before this qoute, then we simply add it.
