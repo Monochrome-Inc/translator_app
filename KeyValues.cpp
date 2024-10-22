@@ -236,8 +236,6 @@ void KeyValues::Export( const QString szPath, const QString szFile, Json::Value 
 bool KeyValues::IsLineIgnored( QString szLine )
 {
     if ( szLine.indexOf("//") != -1 ) return true;
-    if ( szLine.indexOf("{") != -1 ) return true;
-    if ( szLine.indexOf("}") != -1 ) return true;
     return false;
 }
 

@@ -2023,7 +2023,7 @@ QAbstractView:selected {
      <x>0</x>
      <y>0</y>
      <width>868</width>
-     <height>34</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -2055,6 +2055,7 @@ QAbstractView:selected {
       <string>Language</string>
      </property>
      <addaction name="actionLangAdd"/>
+     <addaction name="actionModify"/>
      <addaction name="actionLangRemove"/>
      <addaction name="actionLangExport"/>
      <addaction name="actionLangImport"/>
@@ -2064,6 +2065,7 @@ QAbstractView:selected {
       <string>Translation Keys</string>
      </property>
      <addaction name="actionKeyCreate"/>
+     <addaction name="actionModify_2"/>
      <addaction name="actionKeyRemove"/>
     </widget>
     <addaction name="menuLanguage"/>
@@ -2244,6 +2246,25 @@ QAbstractView:selected {
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionModify">
+   <property name="text">
+    <string>Modify</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="actionModify_2">
+   <property name="icon">
+    <iconset theme="edit-find"/>
+   </property>
+   <property name="text">
+    <string>Modify</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+M</string>
    </property>
   </action>
  </widget>
@@ -2576,6 +2597,38 @@ QAbstractView:selected {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionModify</sender>
+   <signal>triggered()</signal>
+   <receiver>Translator</receiver>
+   <slot>ModifyLang()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>433</x>
+     <y>192</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>433</x>
+     <y>192</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionModify_2</sender>
+   <signal>triggered()</signal>
+   <receiver>Translator</receiver>
+   <slot>ModifyItem()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>433</x>
+     <y>192</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>ShowQTAbout()</slot>
@@ -2597,5 +2650,7 @@ QAbstractView:selected {
   <slot>ClearFile()</slot>
   <slot>OpenExport()</slot>
   <slot>NewFile()</slot>
+  <slot>ModifyItem()</slot>
+  <slot>ModifyLang()</slot>
  </slots>
 </ui>

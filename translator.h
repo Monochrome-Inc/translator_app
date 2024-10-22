@@ -35,6 +35,7 @@ public:
     void SaveOptions( std::string strMain, std::string strExport, int iTimer, std::string strBackup, int iTimer_Backup );
     bool MinimizeSave();
     void OnNewTranslationCreated( QString strFile );
+    void OnItemModified( QString OldString, QString NewString, bool IsLang );
 
 public slots:
     void ClearFile();
@@ -61,6 +62,8 @@ public slots:
     void LangRemove();
     void KeyAdd();
     void KeyRemove();
+    void ModifyItem();
+    void ModifyLang();
 
 protected:
     void OpenSpecificFile(std::string strLocation, std::string strFile, bool bConfigClear = true);

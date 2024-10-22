@@ -30,6 +30,7 @@ CONFIG += c++11
 
 SOURCES += \
     KeyValues.cpp \
+    dialogmodify.cpp \
     main.cpp \
     translator.cpp \
     dialogadd.cpp \
@@ -40,6 +41,7 @@ SOURCES += \
 
 HEADERS += \
     KeyValues.h \
+    dialogmodify.h \
     translator.h \
     dialogadd.h \
     dialogremove.h \
@@ -48,6 +50,7 @@ HEADERS += \
     dialogabout.h
 
 FORMS += \
+    dialogmodify.ui \
     translator.ui \
     dialogadd.ui \
     dialogremove.ui \

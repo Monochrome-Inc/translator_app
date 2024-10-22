@@ -17,6 +17,7 @@
 #include "dialogremove.h"
 #include "dialogoptions.h"
 #include "dialogabout.h"
+#include "dialogmodify.h"
 
 #include "json/reader.h"
 #include <fstream>
@@ -48,6 +49,8 @@ Translator::Translator(QWidget *parent) :
     ui->listWidget->setEnabled( false );
     ui->tableWidget->setEnabled( false );
 
+    ui->actionModify->setEnabled( false );
+    ui->actionModify_2->setEnabled( false );
     ui->actionSave->setEnabled( false );
     ui->actionLangAdd->setEnabled( false );
     ui->actionLangRemove->setEnabled( false );
@@ -114,6 +117,35 @@ void Translator::closeEvent(QCloseEvent *event)
     } else {
         event->ignore();
     }
+}
+
+void Translator::ModifyItem()
+{
+    // Create Dialog
+    DialogModify *pDialog = new DialogModify(this);
+    pDialog->setAttribute(Qt::WA_DeleteOnClose);
+    pDialog->show();
+    pDialog->setWindowTitle( "Modifying Translation Key" );
+    pDialog->Setup( JsonData["lang_english"] );
+
+    // Resize our window size
+    if ( !JsonConfig["dialog_modify"]["width"].empty() && !JsonConfig["dialog_modify"]["height"].empty() )
+        pDialog->resize( JsonConfig["dialog_modify"]["width"].asInt(), JsonConfig["dialog_modify"]["height"].asInt() );
+}
+
+void Translator::ModifyLang()
+{
+    // Create Dialog
+    DialogModify *pDialog = new DialogModify(this);
+    pDialog->setAttribute(Qt::WA_DeleteOnClose);
+    pDialog->show();
+    pDialog->setWindowTitle( "Modifying Language Item" );
+    pDialog->SetIsLangItem(true);
+    pDialog->Setup( JsonData );
+
+    // Resize our window size
+    if ( !JsonConfig["dialog_modify"]["width"].empty() && !JsonConfig["dialog_modify"]["height"].empty() )
+        pDialog->resize( JsonConfig["dialog_modify"]["width"].asInt(), JsonConfig["dialog_modify"]["height"].asInt() );
 }
 
 void Translator::KeySet(QTableWidgetItem *item)
@@ -334,6 +366,8 @@ void Translator::OpenKeyValueImport()
             ui->listWidget->setEnabled( true );
             ui->tableWidget->setEnabled( true );
 
+            ui->actionModify->setEnabled( true );
+            ui->actionModify_2->setEnabled( true );
             ui->actionLangAdd->setEnabled( true );
             ui->actionLangRemove->setEnabled( true );
             ui->actionLangExport->setEnabled( true );
@@ -676,6 +710,8 @@ void Translator::OnNewTranslationCreated( QString strFile )
     strFileLoaded = szFile;
     strFileLocation = "./translations/" + szFile;
 
+    ui->actionModify->setEnabled( true );
+    ui->actionModify_2->setEnabled( true );
     ui->actionClear->setEnabled( true );
     ui->actionSave->setEnabled( true );
     ui->actionLangAdd->setEnabled( true );
@@ -701,6 +737,49 @@ void Translator::OnNewTranslationCreated( QString strFile )
 
     std::string strStatusMsg = szFile + " has been created!";
     ui->statusBar->showMessage( QString::fromStdString( strStatusMsg ), 10000 );
+}
+
+void Translator::OnItemModified( QString OldString, QString NewString, bool IsLang )
+{
+    // Don't make this possible
+    if ( IsLang )
+    {
+        if ( OldString == "english" || NewString == "english" )
+        {
+            QMessageBox::warning(
+                this,
+                "Error",
+                tr("You cannot modify and/or change the english language!\n"),
+                QMessageBox::Yes
+                );
+            return;
+        }
+    }
+
+    // Copy the json data, and insert it into the new one.
+    if ( IsLang )
+        JsonData["lang_" + NewString.toStdString()] = JsonData["lang_" + OldString.toStdString()];
+    else
+        JsonData["lang_english"][NewString.toStdString()] = JsonData["lang_english"][OldString.toStdString()];
+
+    // Erase the old
+    if ( IsLang )
+        JsonData.removeMember("lang_" + OldString.toStdString());
+    else
+        JsonData["lang_english"].removeMember(OldString.toStdString());
+
+    LoadTranslation();
+    SetModified(true);
+
+    // Now select the new language item. (if lang)
+    if ( IsLang )
+    {
+        strCurrentLang = "lang_" + NewString.toStdString();
+        LoadTranslationKeys( JsonData[strCurrentLang] );
+    }
+
+    std::string strStatusMsg = OldString.toStdString() + " has been changed to " + NewString.toStdString() + "!";
+    ui->statusBar->showMessage( QString::fromStdString( strStatusMsg ), 20000 );
 }
 
 void Translator::OpenFile()
@@ -902,6 +981,8 @@ void Translator::OpenSpecificFile(std::string strLocation, std::string strFile, 
         ui->actionClear->setEnabled( true );
         ui->actionSave->setEnabled( true );
         ui->actionLangAdd->setEnabled( true );
+        ui->actionModify->setEnabled( true );
+        ui->actionModify_2->setEnabled( true );
         ui->actionKeyCreate->setEnabled( true );
         ui->actionLangExport->setEnabled( true );
         ui->actionLangImport->setEnabled( true );
