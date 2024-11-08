@@ -2039,10 +2039,11 @@ QAbstractView:selected {
     <addaction name="actionNewFile"/>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
-    <addaction name="separator"/>
     <addaction name="actionExport"/>
     <addaction name="actionImport"/>
     <addaction name="actionClear"/>
+    <addaction name="separator"/>
+    <addaction name="actionAPI_Docs_Mode"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
    </widget>
@@ -2265,6 +2266,14 @@ QAbstractView:selected {
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+M</string>
+   </property>
+  </action>
+  <action name="actionAPI_Docs_Mode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>API Docs Mode</string>
    </property>
   </action>
  </widget>
@@ -2604,8 +2613,8 @@ QAbstractView:selected {
    <slot>ModifyLang()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>433</x>
-     <y>192</y>
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
      <x>433</x>
@@ -2629,10 +2638,27 @@ QAbstractView:selected {
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionAPI_Docs_Mode</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>Translator</receiver>
+   <slot>ToggleMode(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>433</x>
+     <y>192</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>ShowQTAbout()</slot>
   <slot>OpenFile()</slot>
+  <slot>ToggleMode(bool)</slot>
   <slot>SaveFile()</slot>
   <slot>ShutDown()</slot>
   <slot>KeyModify(QTableWidgetItem*)</slot>

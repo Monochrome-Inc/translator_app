@@ -50,6 +50,7 @@ public slots:
     void BackupFile();
     void AutoSave();
     void AutoBackup();
+    void ToggleMode(bool state);
     void SetModified(bool state);
     void UpdateTimer();
     void ShutDown();
@@ -86,6 +87,12 @@ private:
     bool bConfigLoaded;
     bool bHasModifiedFile;
     bool bIgnoreAddItemError;
+
+    // START: AS API Docs Support
+    /// If enabled, we will check the latest data.json
+    /// provided by the SDK AppID, the same exact one used by the API docs website.
+    bool bIsAngelscript;
+    // END: AS API Docs Support
 
     std::string strCurrentLang = "lang_english";
     std::string	strFileLocation;

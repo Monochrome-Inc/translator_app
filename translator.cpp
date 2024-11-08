@@ -921,6 +921,88 @@ void Translator::SaveFile()
     SetModified( false );
 }
 
+void Translator::ToggleMode(bool state)
+{
+    if ( bHasModifiedFile )
+    {
+        QMessageBox::StandardButton resBtn = QMessageBox::question(
+            this, "Translator",
+            tr("Do you want to save your changes?\n"),
+            QMessageBox::No | QMessageBox::Yes | QMessageBox::Cancel,
+            QMessageBox::Yes
+            );
+        if (resBtn == QMessageBox::Cancel) return;
+        if (resBtn == QMessageBox::Yes)
+            SaveFile();
+    }
+
+    bIsAngelscript = state;
+
+    // Clear everything
+    bFileLoaded = false;
+    JsonData.clear();
+
+    // Clear our list
+    ui->listWidget->clear();
+    ui->listWidget->setEnabled( false );
+
+    // Clear our table
+    ui->tableWidget->clear();
+    ui->tableWidget->setColumnCount( 1 );
+    ui->tableWidget->setEnabled( false );
+
+    // Turn everything off
+    ui->actionModify->setEnabled( false );
+    ui->actionModify_2->setEnabled( false );
+    ui->actionSave->setEnabled( false );
+    ui->actionLangAdd->setEnabled( false );
+    ui->actionLangRemove->setEnabled( false );
+    ui->actionLangExport->setEnabled( false );
+    ui->actionLangImport->setEnabled( false );
+    ui->actionKeyCreate->setEnabled( false );
+    ui->actionKeyRemove->setEnabled( false );
+
+    // Don't allow for new translation, or modified, strings.
+    ui->actionNewFile->setEnabled( bIsAngelscript ? false : true );
+    ui->actionOpen->setEnabled( bIsAngelscript ? false : true );
+    ui->actionExport->setEnabled( bIsAngelscript ? false : true );
+    ui->actionImport->setEnabled( bIsAngelscript ? false : true );
+    ui->menuLanguage->setEnabled( bIsAngelscript ? false : true );
+    ui->menuTranslation_Keys->setEnabled( bIsAngelscript ? false : true );
+    ui->actionClear->setEnabled( bIsAngelscript ? false : true );
+
+    // If not AS, then we will load our config again.
+    // This in turn will load the previous loaded file once again.
+    if ( !bIsAngelscript )
+        LoadConfig();
+    else
+    {
+        Json::CharReaderBuilder rbuilder;
+        Json::Value JSONReaderData;
+        std::string strErr;
+
+        std::ifstream JsonFile( "./../data.json", std::ifstream::binary );
+        if ( Json::parseFromStream( rbuilder, JsonFile, &JSONReaderData, &strErr ) )
+        {
+            // TODO: Load data.json and populate each tab with the correct categories, functions and pages from the API Docs.
+            // After we are done loading everything into memory, we will then ask if we should load an already existing translated doc
+            // if user presses no, it will ask to create one, once created (or loaded), it will then go trough our translated ones and
+            // check for missing translation strings. If found, populate.
+            // Once that is all done and dusted, populate the actual table and lists with the crap we need.
+
+            // We also need to activate "Save" again, but make it save to the new translated json file.
+            ui->statusBar->showMessage( "Succefully loaded the API Docs file!", 10000 );
+        }
+        else
+        {
+            QMessageBox::warning( this, "Translator",
+                tr("Failed to read the API docs file 'data.json'!\nReason: ") + QString::fromStdString(strErr) + "\n"
+            );
+            ui->statusBar->showMessage( "Failed to load the API Docs file!", 10000 );
+        }
+    }
+}
+
 void Translator::SetModified(bool state)
 {
     // Our title output
